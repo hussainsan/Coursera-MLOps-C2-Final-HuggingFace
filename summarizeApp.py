@@ -1,25 +1,31 @@
 from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
 import gradio as gr
 
-
-#uncomment to download model
-#from transformers import pipeline
-#model = pipeline(
-#    "summarization",
-#    model="sshleifer/distilbart-cnn-12-6",
-#    revision="a4f8f3e",
-#)
-
-#load model and tokenizer from disk
-model = AutoModelForSeq2SeqLM.from_pretrained("summarizeApp")
-tokenizer = AutoTokenizer.from_pretrained("summarizeApp")
+model = AutoModelForSeq2SeqLM.from_pretrained("sshleifer/distilbart-cnn-12-6")
+tokenizer = AutoTokenizer.from_pretrained("sshleifer/distilbart-cnn-12-6")
 
 def predict(prompt):
+    # Count number of words in the input prompt 
+    word_count_input = len(prompt.split())
+    
     input_ids = tokenizer.encode(prompt, return_tensors="pt")
-    outputs = model.generate(input_ids)
+    outputs = model.generate(input_ids, max_length=250, num_beams=4, early_stopping=True)
     decoded = tokenizer.decode(outputs[0], skip_special_tokens=True)
-    return decoded
+    
+    # Count number of words in the summarized text
+    word_count_summary = len(decoded.split())
+    
+    return decoded, f"Input Word Count: {word_count_input}", f"Summary Word Count: {word_count_summary}"
 
-# create an interface for the model
-with gr.Interface(predict, "textbox", "text") as interface:
-    interface.launch()
+# Define the interface
+iface = gr.Interface(
+    fn=predict, 
+    inputs=gr.components.Textbox(placeholder="Enter your text here..."),
+    outputs=[
+        gr.components.Textbox(label="Summarized Text"),
+        gr.components.Textbox(label="Original Word Count"),
+        gr.components.Textbox(label="Summarized Word Count")
+    ]
+)
+
+iface.launch()

@@ -1,15 +1,19 @@
 import gradio as gr
+# import calculator first then use the add inside the calculator
+from mylib import calculator
 
 
-def greet(phrase):
-    greeting = f"Hello {phrase}!"
-    return greeting
-
+def add_numbers(num1, num2):
+    num1 = int(num1)
+    num2 = int(num2)
+    return calculator.add(num1, num2)
 
 with gr.Blocks() as demo:
-    name = gr.Textbox(label="Name")
-    output = gr.Textbox(label="Output Box")
-    greet_btn = gr.Button("Greet")
-    greet_btn.click(fn=greet, inputs=name, outputs=output)
+    first_num = gr.Textbox(label="first num")
+    second_num = gr.Textbox(label="second num")
+    output = gr.Textbox(label="Result")
+    add_butt = gr.Button("Add")
+    add_butt.click(fn=add_numbers,inputs=[first_num,second_num], outputs=output)
+    
 
 demo.launch()
